@@ -1,0 +1,1787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="description" content="Personal belly fat loss tracker — daily habits, fasting schedule, water, steps, sleep, weight log and weekly summary."/>
+<meta name="theme-color" content="#07090f"/>
+<meta property="og:title" content="Belly Fat Loss Tracker"/>
+<meta property="og:description" content="Personal fitness dashboard — fasting, steps, sleep, weight & more."/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>Belly Fat Loss Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg:#07090f;
+  --surface:#0d1117;
+  --surface2:#111820;
+  --border:#1c2533;
+  --border-hover:#2d3f52;
+  --green:#22c55e;
+  --green-dim:#16a34a;
+  --green-glow:rgba(34,197,94,0.15);
+  --amber:#f59e0b;
+  --amber-dim:rgba(245,158,11,0.12);
+  --text:#e2e8f0;
+  --text-muted:#64748b;
+  --text-soft:#94a3b8;
+  --radius:14px;
+  --radius-sm:9px;
+}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-size:15px;
+  line-height:1.6;
+  min-height:100vh;
+  padding:32px 20px 60px;
+}
+
+/* Noise texture overlay */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0;opacity:.6;
+}
+
+.container{max-width:1100px;margin:auto;position:relative;z-index:1}
+
+/* ── HEADER ── */
+.header{margin-bottom:40px}
+.header-top{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.header h1{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(26px,5vw,42px);
+  font-weight:800;
+  letter-spacing:-1px;
+  line-height:1.1;
+  background:linear-gradient(135deg,#fff 40%,var(--green));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.header p{color:var(--text-muted);margin-top:8px;font-size:14px}
+
+.date-badge{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;padding:8px 14px;
+  font-family:'DM Mono',monospace;font-size:12px;color:var(--text-soft);
+  white-space:nowrap;
+}
+
+/* ── STAT CARDS ── */
+.top-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:16px;margin-bottom:24px;
+}
+.stat-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:22px 24px;
+  position:relative;overflow:hidden;
+}
+.stat-card::after{
+  content:'';position:absolute;
+  top:-30px;right:-30px;
+  width:100px;height:100px;
+  border-radius:50%;
+  background:var(--green-glow);filter:blur(30px);
+  pointer-events:none;
+}
+.stat-label{
+  font-size:11px;font-weight:500;
+  text-transform:uppercase;letter-spacing:.08em;
+  color:var(--text-muted);margin-bottom:6px;
+}
+.stat-value{
+  font-family:'Syne',sans-serif;
+  font-size:38px;font-weight:800;
+  color:var(--green);line-height:1;
+}
+.stat-sub{
+  font-size:12px;color:var(--text-muted);margin-top:4px;
+}
+
+/* ── PROGRESS BAR ── */
+.progress-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:24px;margin-bottom:24px;
+}
+.progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.progress-header h3{font-family:'Syne',sans-serif;font-weight:700;font-size:16px}
+.progress-pct{
+  font-family:'DM Mono',monospace;font-size:13px;
+  color:var(--green);font-weight:500;
+}
+.progress-bar{
+  height:10px;background:var(--surface2);
+  border-radius:50px;overflow:hidden;
+}
+.progress-fill{
+  height:100%;
+  background:linear-gradient(90deg,var(--green-dim),var(--green));
+  border-radius:50px;transition:width .5s cubic-bezier(.4,0,.2,1);
+  position:relative;
+}
+.progress-fill::after{
+  content:'';position:absolute;right:0;top:0;
+  width:10px;height:100%;
+  background:rgba(255,255,255,.35);border-radius:50px;
+}
+.tasks-meta{margin-top:10px;font-size:12px;color:var(--text-muted)}
+
+/* ── SECTION HEADERS ── */
+.section-head{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:18px;margin-top:36px;
+}
+.section-head h2{
+  font-family:'Syne',sans-serif;font-weight:700;font-size:18px;
+}
+.section-head .pill{
+  font-size:11px;padding:3px 9px;border-radius:20px;
+  background:var(--green-glow);color:var(--green);
+  border:1px solid rgba(34,197,94,.2);
+  font-family:'DM Mono',monospace;
+}
+
+/* ── TASK GRID ── */
+.task-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:12px;margin-bottom:8px;
+}
+.task{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:16px 18px;
+  display:flex;align-items:flex-start;gap:12px;
+  cursor:pointer;
+  transition:border-color .2s,transform .2s,background .2s;
+  position:relative;overflow:hidden;
+}
+.task:hover{border-color:var(--border-hover);transform:translateY(-1px)}
+.task.is-done{
+  border-color:rgba(34,197,94,.3);
+  background:rgba(34,197,94,.04);
+}
+.task-check{
+  width:20px;height:20px;flex-shrink:0;
+  border:1.5px solid var(--border-hover);
+  border-radius:6px;margin-top:2px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.task.is-done .task-check{
+  background:var(--green);border-color:var(--green);
+}
+.task-check svg{
+  width:12px;height:12px;stroke:#000;stroke-width:2.5;
+  opacity:0;transition:opacity .15s;
+}
+.task.is-done .task-check svg{opacity:1}
+.task-body{flex:1}
+.task-body strong{font-size:14px;font-weight:500;display:block}
+.task-body small{font-size:12px;color:var(--text-muted);line-height:1.4;margin-top:2px;display:block}
+.task.is-done .task-body strong{opacity:.45;text-decoration:line-through}
+
+/* flex-food info badge */
+.info-badge{
+  display:inline-block;margin-top:5px;
+  padding:2px 8px;border-radius:20px;font-size:11px;
+  background:var(--amber-dim);color:var(--amber);
+  border:1px solid rgba(245,158,11,.2);
+  font-family:'DM Mono',monospace;
+}
+
+/* disabled task (reference list) */
+.task-ref{
+  background:var(--surface);border:1px dashed var(--border);
+  border-radius:var(--radius);padding:16px 18px;
+  display:flex;align-items:flex-start;gap:12px;
+}
+.task-ref .task-icon{font-size:22px;line-height:1;margin-top:1px}
+.task-ref .task-body strong{font-size:14px;font-weight:500;display:block}
+.task-ref .task-body small{font-size:12px;color:var(--text-muted);margin-top:2px;display:block}
+
+/* ── GITHUB GRID ── */
+.github-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:24px;
+}
+.github-labels{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:6px;margin-bottom:6px;
+}
+.github-label{
+  text-align:center;font-size:10px;
+  color:var(--text-muted);
+  font-family:'DM Mono',monospace;
+}
+.github-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:6px;margin-top:4px;
+}
+.day{
+  aspect-ratio:1/1;border-radius:6px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  cursor:pointer;
+  transition:background .2s,transform .15s,border-color .2s;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;color:var(--text-muted);
+  font-family:'DM Mono',monospace;
+}
+.day:hover{transform:scale(1.1);border-color:var(--border-hover)}
+.day.active{
+  background:var(--green);border-color:var(--green);
+  color:#000;font-weight:600;
+  box-shadow:0 0 8px rgba(34,197,94,.35);
+}
+.github-legend{
+  display:flex;gap:16px;margin-top:14px;
+  font-size:12px;color:var(--text-muted);align-items:center;flex-wrap:wrap;
+}
+.legend-dot{width:12px;height:12px;border-radius:4px;flex-shrink:0}
+.github-month-info{
+  font-size:12px;color:var(--text-soft);margin-top:12px;
+  font-family:'DM Mono',monospace;
+}
+
+/* ── WEIGHT LOG ── */
+.weight-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:24px;
+}
+.weight-input-row{
+  display:flex;gap:10px;margin-top:16px;
+}
+.weight-input-row input{
+  flex:1;padding:12px 16px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  color:var(--text);font-size:15px;
+  font-family:'DM Sans',sans-serif;
+  outline:none;transition:border-color .2s;
+}
+.weight-input-row input:focus{border-color:var(--green)}
+.weight-input-row input::placeholder{color:var(--text-muted)}
+.btn-green{
+  padding:12px 20px;border:none;border-radius:var(--radius-sm);
+  background:var(--green);color:#000;
+  font-weight:600;font-size:14px;cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+  transition:opacity .2s,transform .1s;white-space:nowrap;
+}
+.btn-green:hover{opacity:.9;transform:translateY(-1px)}
+.weight-history{margin-top:16px;display:flex;flex-direction:column;gap:8px}
+.weight-item{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:12px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.weight-kg{
+  font-family:'Syne',sans-serif;font-weight:700;font-size:18px;color:var(--green);
+}
+.weight-date{font-size:12px;color:var(--text-muted);font-family:'DM Mono',monospace}
+.weight-diff{
+  font-size:12px;font-family:'DM Mono',monospace;padding:3px 8px;
+  border-radius:20px;
+}
+.weight-diff.down{background:rgba(34,197,94,.1);color:var(--green)}
+.weight-diff.up{background:rgba(239,68,68,.1);color:#f87171}
+.weight-empty{font-size:13px;color:var(--text-muted);text-align:center;padding:20px 0}
+
+/* ── DIVIDER ── */
+.divider{
+  height:1px;background:var(--border);
+  margin:36px 0;
+}
+
+/* ── RESET ── */
+.reset-row{margin-top:40px;text-align:center}
+.btn-reset{
+  padding:13px 32px;border:1px solid var(--border);
+  border-radius:var(--radius-sm);background:transparent;
+  color:var(--text-muted);font-size:14px;cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+  transition:border-color .2s,color .2s;
+}
+.btn-reset:hover{border-color:#ef4444;color:#f87171}
+
+/* ── TOOLTIP ── */
+.tip{
+  display:none;
+  position:absolute;bottom:calc(100% + 8px);left:50%;
+  transform:translateX(-50%);
+  background:#1c2533;border:1px solid var(--border-hover);
+  border-radius:8px;padding:6px 10px;
+  font-size:11px;color:var(--text-soft);white-space:nowrap;z-index:10;
+}
+.day:hover .tip{display:block}
+
+/* ── MOOD BUTTONS ── */
+.mood-btn{
+  padding:8px 14px;border-radius:20px;
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--text-soft);font-size:13px;cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+  transition:all .2s;white-space:nowrap;
+}
+.mood-btn:hover{border-color:var(--border-hover);color:var(--text)}
+.mood-btn.active{
+  background:var(--green-glow);border-color:var(--green);
+  color:var(--green);font-weight:500;
+}
+.mood-btn[data-key="hunger"].active[data-val="3"]{
+  background:rgba(239,68,68,.1);border-color:#ef4444;color:#f87171;
+}
+
+/* ── ACTIVE TABLE ROW HIGHLIGHT ── */
+.fasting-row-active td{
+  background:rgba(34,197,94,.07) !important;
+}
+
+/* ── BMI ── */
+.bmi-result{
+  display:flex;align-items:center;gap:20px;
+  margin-top:20px;padding:18px 20px;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);flex-wrap:wrap;
+}
+.bmi-value{font-family:'Syne',sans-serif;font-size:42px;font-weight:800;line-height:1}
+.bmi-scale{
+  flex:1;min-width:200px;margin-top:4px;
+}
+.bmi-bar-wrap{
+  height:8px;border-radius:50px;overflow:hidden;
+  background:linear-gradient(90deg,#3b82f6 0%,#22c55e 30%,#f59e0b 60%,#ef4444 100%);
+  position:relative;margin-top:8px;
+}
+.bmi-marker{
+  position:absolute;top:-3px;width:3px;height:14px;
+  background:#fff;border-radius:2px;
+  transition:left .4s cubic-bezier(.4,0,.2,1);
+}
+.bmi-labels{
+  display:flex;justify-content:space-between;
+  font-size:10px;color:var(--text-muted);
+  font-family:'DM Mono',monospace;margin-top:4px;
+}
+
+/* ── WATER TRACKER ── */
+.water-cups{
+  display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;
+}
+.cup{
+  width:48px;height:56px;border-radius:6px 6px 10px 10px;
+  background:var(--surface2);border:1.5px solid var(--border);
+  cursor:pointer;transition:all .2s;
+  display:flex;align-items:flex-end;justify-content:center;
+  padding-bottom:6px;font-size:18px;
+  position:relative;overflow:hidden;
+}
+.cup::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(56,189,248,.6),rgba(14,165,233,.9));
+  transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);
+}
+.cup.filled::before{transform:translateY(0)}
+.cup:hover{border-color:var(--border-hover);transform:scale(1.05)}
+.cup .cup-icon{position:relative;z-index:1}
+.water-meta{margin-top:12px;font-size:13px;color:var(--text-muted)}
+.water-target-row{
+  display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap;
+}
+.water-target-row label{font-size:13px;color:var(--text-soft)}
+.water-target-row select{
+  padding:7px 12px;background:var(--surface2);
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;
+}
+
+/* ── STEPS ── */
+.steps-display{
+  display:flex;align-items:flex-end;gap:6px;margin:16px 0 8px;
+}
+.steps-number{
+  font-family:'Syne',sans-serif;font-size:48px;font-weight:800;
+  color:var(--green);line-height:1;
+}
+.steps-unit{font-size:16px;color:var(--text-muted);padding-bottom:8px}
+.steps-input-row{display:flex;gap:10px;margin-top:10px}
+.steps-input-row input{
+  flex:1;padding:11px 14px;background:var(--surface2);
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  color:var(--text);font-size:15px;font-family:'DM Mono',monospace;outline:none;
+  transition:border-color .2s;
+}
+.steps-input-row input:focus{border-color:var(--green)}
+.steps-history{margin-top:14px;display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto}
+.step-item{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:10px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.step-val{font-family:'DM Mono',monospace;font-size:14px;font-weight:500}
+.step-badge{
+  font-size:11px;padding:2px 8px;border-radius:20px;
+  font-family:'DM Mono',monospace;
+}
+.step-badge.goal{background:rgba(34,197,94,.12);color:var(--green)}
+.step-badge.miss{background:rgba(100,116,139,.1);color:var(--text-muted)}
+
+/* ── SLEEP ── */
+.sleep-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:12px;margin-top:16px;
+}
+.sleep-input-group label{
+  font-size:12px;color:var(--text-muted);
+  font-family:'DM Mono',monospace;display:block;margin-bottom:6px;
+}
+.sleep-input-group input{
+  width:100%;padding:11px 14px;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);color:var(--text);font-size:15px;
+  font-family:'DM Mono',monospace;outline:none;transition:border-color .2s;
+}
+.sleep-input-group input:focus{border-color:var(--green)}
+.sleep-result{
+  margin-top:16px;padding:14px 18px;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+}
+.sleep-hours{
+  font-family:'Syne',sans-serif;font-size:32px;font-weight:800;
+  color:var(--green);
+}
+.sleep-history{margin-top:14px;display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto}
+.sleep-item{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:10px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.sleep-label{font-size:13px;color:var(--text-soft)}
+.sleep-badge{
+  font-size:11px;padding:2px 8px;border-radius:20px;font-family:'DM Mono',monospace;
+}
+.sleep-badge.good{background:rgba(34,197,94,.12);color:var(--green)}
+.sleep-badge.ok{background:rgba(245,158,11,.12);color:var(--amber)}
+.sleep-badge.bad{background:rgba(239,68,68,.1);color:#f87171}
+
+/* ── WEEKLY SUMMARY ── */
+.summary-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:12px;margin-bottom:20px;
+}
+.summary-stat{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:16px;
+}
+.summary-val{
+  font-family:'Syne',sans-serif;font-size:26px;font-weight:800;
+  color:var(--green);line-height:1;margin-top:4px;
+}
+.summary-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em}
+.week-days{
+  display:flex;gap:6px;margin-top:16px;flex-wrap:wrap;
+}
+.wday{
+  flex:1;min-width:36px;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:8px 4px;text-align:center;
+  font-size:10px;color:var(--text-muted);font-family:'DM Mono',monospace;
+}
+.wday.done{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.3);color:var(--green)}
+.wday.today-w{outline:1px solid var(--green);outline-offset:2px}
+.wday-name{font-size:9px;margin-bottom:4px;opacity:.7}
+.wday-dot{width:8px;height:8px;border-radius:50%;background:currentColor;margin:4px auto 0}
+.summary-tip{
+  margin-top:16px;padding:14px 16px;
+  background:var(--amber-dim);border:1px solid rgba(245,158,11,.2);
+  border-radius:var(--radius-sm);font-size:13px;color:var(--text-soft);line-height:1.6;
+}
+.summary-tip strong{color:var(--amber)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+  body{padding:20px 14px 50px}
+  .stat-value{font-size:30px}
+  .github-grid,.github-labels{gap:4px}
+  .day{border-radius:4px}
+  .steps-number{font-size:36px}
+  .sleep-hours{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <h1>Belly Fat Loss<br>Tracker</h1>
+        <p>Web Developer · Personal Fitness Dashboard</p>
+      </div>
+      <div class="date-badge" id="dateBadge">–</div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="top-grid">
+    <div class="stat-card">
+      <div class="stat-label">Current Streak</div>
+      <div class="stat-value" id="streak">0</div>
+      <div class="stat-sub">consecutive days</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Days Completed</div>
+      <div class="stat-value" id="completedDays">0</div>
+      <div class="stat-sub">this month</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Monthly Progress</div>
+      <div class="stat-value" id="monthlyPercent">0%</div>
+      <div class="stat-sub">of 30 days</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Today's Tasks</div>
+      <div class="stat-value" id="todayPct">0%</div>
+      <div class="stat-sub" id="todaySub">0 of 6 done</div>
+    </div>
+  </div>
+
+  <!-- OVERALL PROGRESS -->
+  <div class="progress-card">
+    <div class="progress-header">
+      <h3>Daily Task Progress</h3>
+      <span class="progress-pct" id="progressPct">0%</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div class="tasks-meta" id="tasksMeta">Complete all 6 tasks to mark today as done</div>
+  </div>
+
+  <!-- DAILY TASKS -->
+  <div class="section-head">
+    <h2>Daily Habits</h2>
+    <span class="pill">TODAY</span>
+  </div>
+
+  <div class="task-grid" id="taskGrid">
+    <!-- rendered by JS -->
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- FASTING SCHEDULE -->
+  <div class="section-head">
+    <h2>Fasting Schedule</h2>
+    <span class="pill">16:8</span>
+  </div>
+
+  <!-- LIVE FASTING CLOCK -->
+  <div class="progress-card" style="margin-bottom:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+      <div>
+        <div class="stat-label">Current Phase</div>
+        <div id="fastPhaseLabel" style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-top:4px">—</div>
+      </div>
+      <div style="text-align:right">
+        <div class="stat-label">Time Until Next Phase</div>
+        <div id="fastCountdown" style="font-family:'DM Mono',monospace;font-size:22px;color:var(--green);margin-top:4px">--:--:--</div>
+      </div>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="fastProgress" style="width:0%"></div>
+    </div>
+    <div style="margin-top:8px;font-size:12px;color:var(--text-muted)" id="fastMeta">Calculating…</div>
+  </div>
+
+  <div class="progress-card">
+    <div style="overflow:auto;border:1px solid var(--border);border-radius:12px">
+      <table style="width:100%;border-collapse:collapse;min-width:580px;font-size:14px">
+        <thead>
+          <tr style="background:var(--surface2)">
+            <th style="padding:14px 16px;text-align:left;border-bottom:1px solid var(--border);font-weight:600;color:var(--text-soft);font-size:12px;text-transform:uppercase;letter-spacing:.06em">Time</th>
+            <th style="padding:14px 16px;text-align:left;border-bottom:1px solid var(--border);font-weight:600;color:var(--text-soft);font-size:12px;text-transform:uppercase;letter-spacing:.06em">Phase</th>
+            <th style="padding:14px 16px;text-align:left;border-bottom:1px solid var(--border);font-weight:600;color:var(--text-soft);font-size:12px;text-transform:uppercase;letter-spacing:.06em">What To Do</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding:14px 16px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:13px">7:00 AM</td>
+            <td style="padding:14px 16px;border-bottom:1px solid var(--border);color:var(--amber);font-weight:500">⏳ Fasting</td>
+            <td style="padding:14px 16px;border-bottom:1px solid var(--border);color:var(--text-soft)">Water, black coffee or green tea only</td>
+          </tr>
+          <tr>
+            <td style="padding:14px 16px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:13px">9:30 AM</td>
+            <td style="padding:14px 16px;border-bottom:1px solid var(--border);color:var(--amber);font-weight:500">💼 Office Start</td>
+            <td style="padding:14px 16px;border-bottom:1px solid var(--border);color:var(--text-soft)">Continue fasting — stay hydrated at desk</td>
+          </tr>
+          <tr style="background:rgba(34,197,94,.04)" id="eatRow">
+            <td style="padding:14px 16px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:13px">1:30 PM</td>
+            <td style="padding:14px 16px;border-bottom:1px solid var(--border);color:var(--green);font-weight:500">🍽 Eating Window Opens</td>
+            <td style="padding:14px 16px;border-bottom:1px solid var(--border);color:var(--text-soft)">Lunch — high protein + moderate rice</td>
+          </tr>
+          <tr>
+            <td style="padding:14px 16px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:13px">4:30 PM</td>
+            <td style="padding:14px 16px;border-bottom:1px solid var(--border);color:var(--green);font-weight:500">🥜 Snack</td>
+            <td style="padding:14px 16px;border-bottom:1px solid var(--border);color:var(--text-soft)">Nuts, fruit, black tea or low-sugar milk coffee</td>
+          </tr>
+          <tr>
+            <td style="padding:14px 16px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:13px">8:30 PM</td>
+            <td style="padding:14px 16px;border-bottom:1px solid var(--border);color:var(--green);font-weight:500">🏠 Office End</td>
+            <td style="padding:14px 16px;border-bottom:1px solid var(--border);color:var(--text-soft)">Light dinner after returning home</td>
+          </tr>
+          <tr style="background:rgba(245,158,11,.04)">
+            <td style="padding:14px 16px;font-family:'DM Mono',monospace;font-size:13px">9:30 PM</td>
+            <td style="padding:14px 16px;color:var(--amber);font-weight:500">🔒 Fasting Starts Again</td>
+            <td style="padding:14px 16px;color:var(--text-soft)">No food after this — 16 hrs begins</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:14px;font-size:13px;color:var(--text-muted);line-height:1.7">
+      <strong style="color:var(--green)">Your window:</strong>
+      16-hour fast from <strong style="color:var(--text)">9:30 PM → 1:30 PM</strong> — fits your office schedule naturally and eliminates late-night eating.
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- MOOD & ENERGY LOG -->
+  <div class="section-head">
+    <h2>Daily Mood &amp; Energy</h2>
+    <span class="pill">TODAY</span>
+  </div>
+  <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.7;max-width:600px">
+    Tracking how you feel reveals patterns — energy dips often link to skipped fasting or poor sleep.
+  </p>
+  <div class="progress-card" style="margin-bottom:0">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px">
+      <div>
+        <div class="stat-label" style="margin-bottom:10px">Energy Level</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="mood-btn" data-key="energy" data-val="1">😴 Low</button>
+          <button class="mood-btn" data-key="energy" data-val="2">😐 Okay</button>
+          <button class="mood-btn" data-key="energy" data-val="3">⚡ High</button>
+        </div>
+      </div>
+      <div>
+        <div class="stat-label" style="margin-bottom:10px">Hunger Level</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="mood-btn" data-key="hunger" data-val="1">😌 Managed</button>
+          <button class="mood-btn" data-key="hunger" data-val="2">😤 Struggled</button>
+          <button class="mood-btn" data-key="hunger" data-val="3">🚨 Broke Fast</button>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:20px">
+      <div class="stat-label" style="margin-bottom:8px">Quick Note (optional)</div>
+      <textarea id="moodNote" placeholder="How did today feel? Any wins or struggles…" style="width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;resize:vertical;min-height:70px;outline:none;line-height:1.6"></textarea>
+    </div>
+    <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <span style="font-size:12px;color:var(--text-muted)" id="moodSaved"></span>
+      <button class="btn-green" onclick="saveMoodLog()" style="padding:9px 18px;font-size:13px">Save Today's Log</button>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- MONTHLY TRACKER -->
+  <div class="section-head">
+    <h2>Monthly Tracker</h2>
+    <span class="pill" id="monthPill">JUNE</span>
+  </div>
+
+  <div class="github-card">
+    <div class="github-labels" id="githubLabels"></div>
+    <div class="github-grid" id="githubGrid"></div>
+    <div class="github-legend">
+      <span style="display:flex;align-items:center;gap:6px">
+        <span class="legend-dot" style="background:var(--surface2);border:1px solid var(--border)"></span> Not done
+      </span>
+      <span style="display:flex;align-items:center;gap:6px">
+        <span class="legend-dot" style="background:var(--green)"></span> Completed
+      </span>
+    </div>
+    <div class="github-month-info" id="githubInfo">0 / 30 days completed this month</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- BALANCED FOOD REFERENCE -->
+  <div class="section-head">
+    <h2>Balanced Food Guide</h2>
+    <span class="pill">REFERENCE</span>
+  </div>
+  <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.7;max-width:600px">
+    Belly fat loss doesn't mean banning every favourite food. The goal is balance, portion control, and consistency — not punishment.
+  </p>
+
+  <div class="task-grid">
+    <div class="task-ref">
+      <div class="task-icon">☕</div>
+      <div class="task-body">
+        <strong>Milk Coffee</strong>
+        <small>Low sugar · 1 cup per day max</small>
+      </div>
+    </div>
+    <div class="task-ref">
+      <div class="task-icon">🫓</div>
+      <div class="task-body">
+        <strong>Paratha</strong>
+        <small>Low oil · 1× per week only</small>
+      </div>
+    </div>
+    <div class="task-ref">
+      <div class="task-icon">🍗</div>
+      <div class="task-body">
+        <strong>Chicken Masala</strong>
+        <small>Homemade preferred · less oil</small>
+      </div>
+    </div>
+    <div class="task-ref">
+      <div class="task-icon">🥟</div>
+      <div class="task-body">
+        <strong>Shingara / Samosa</strong>
+        <small>1 day per week maximum</small>
+      </div>
+    </div>
+    <div class="task-ref">
+      <div class="task-icon">🍰</div>
+      <div class="task-body">
+        <strong>Cake / Sweets</strong>
+        <small>Small portion · occasional only</small>
+      </div>
+    </div>
+    <div class="task-ref">
+      <div class="task-icon">🌶</div>
+      <div class="task-body">
+        <strong>Fuchka</strong>
+        <small>Occasionally okay in moderation</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- FLEXIBLE FOOD TRACKER -->
+  <div class="section-head">
+    <h2>Weekly Flex Food Log</h2>
+    <span class="pill">THIS WEEK</span>
+  </div>
+  <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.7;max-width:600px">
+    Track your controlled cheat meals here. Checking these off means you stayed within the limits — it's a win, not a slip.
+  </p>
+
+  <div class="task-grid" id="flexGrid">
+    <!-- rendered by JS -->
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ══ BMI CALCULATOR ══ -->
+  <div class="section-head">
+    <h2>BMI Calculator</h2>
+    <span class="pill">BODY MASS</span>
+  </div>
+  <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.7;max-width:600px">
+    Enter your height once — BMI auto-updates every time you log a new weight.
+  </p>
+  <div class="progress-card">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px">
+      <div>
+        <div class="stat-label" style="margin-bottom:8px">Height (cm)</div>
+        <div style="display:flex;gap:8px">
+          <input type="number" id="heightInput" placeholder="e.g. 170" min="100" max="250"
+            style="flex:1;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:15px;font-family:'DM Mono',monospace;outline:none;transition:border-color .2s"
+            oninput="this.style.borderColor='var(--green)';saveHeight();calcBMI()">
+        </div>
+      </div>
+      <div>
+        <div class="stat-label" style="margin-bottom:8px">Weight (kg)</div>
+        <div style="padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'DM Mono',monospace;font-size:15px;color:var(--text-soft)" id="bmiWeightDisplay">— log a weight first</div>
+      </div>
+    </div>
+    <div class="bmi-result" id="bmiResult" style="display:none">
+      <div>
+        <div class="stat-label">BMI</div>
+        <div class="bmi-value" id="bmiValue">—</div>
+        <div style="font-size:13px;margin-top:4px;font-weight:500" id="bmiCategory">—</div>
+      </div>
+      <div class="bmi-scale" style="flex:1">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">Scale</div>
+        <div class="bmi-bar-wrap">
+          <div class="bmi-marker" id="bmiMarker" style="left:30%"></div>
+        </div>
+        <div class="bmi-labels">
+          <span>16</span><span>18.5</span><span>25</span><span>30</span><span>40</span>
+        </div>
+      </div>
+    </div>
+    <div id="bmiEmpty" style="margin-top:16px;font-size:13px;color:var(--text-muted)">
+      Enter your height above and log a weight to see your BMI.
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ══ WATER INTAKE ══ -->
+  <div class="section-head">
+    <h2>Water Intake</h2>
+    <span class="pill">DAILY</span>
+  </div>
+  <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.7;max-width:600px">
+    Each cup = 250ml. Tap to fill. Target resets at midnight.
+  </p>
+  <div class="progress-card">
+    <div class="water-target-row">
+      <label>Daily target:</label>
+      <select id="waterTarget" onchange="saveWaterTarget();renderWater()">
+        <option value="8">2L (8 cups)</option>
+        <option value="10" selected>2.5L (10 cups)</option>
+        <option value="12">3L (12 cups)</option>
+      </select>
+    </div>
+    <div class="water-cups" id="waterCups"></div>
+    <div class="progress-bar" style="margin-top:16px">
+      <div class="progress-fill" id="waterProgress" style="width:0%"></div>
+    </div>
+    <div class="water-meta" id="waterMeta">0 / 10 cups · 0ml of 2500ml</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ══ WALKING STEPS ══ -->
+  <div class="section-head">
+    <h2>Step Counter</h2>
+    <span class="pill">DAILY</span>
+  </div>
+  <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.7;max-width:600px">
+    Log your steps each day. Goal: 6,000+ steps. History shows last 7 days.
+  </p>
+  <div class="progress-card">
+    <div class="steps-display">
+      <div class="steps-number" id="stepsToday">0</div>
+      <div class="steps-unit">steps today</div>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="stepsProgress" style="width:0%"></div>
+    </div>
+    <div style="margin-top:8px;font-size:12px;color:var(--text-muted)" id="stepsMeta">0% of 6,000 goal</div>
+    <div class="steps-input-row" style="margin-top:16px">
+      <input type="number" id="stepsInput" placeholder="Enter today's steps  (e.g. 7500)" min="0" max="99999"/>
+      <button class="btn-green" id="saveStepsBtn">Log Steps</button>
+    </div>
+    <div class="steps-history" id="stepsHistory"></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ══ SLEEP TRACKER ══ -->
+  <div class="section-head">
+    <h2>Sleep Tracker</h2>
+    <span class="pill">NIGHTLY</span>
+  </div>
+  <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.7;max-width:600px">
+    Log bedtime and wake time. Aim for 7–8 hours. Late nights (after 12am) are flagged.
+  </p>
+  <div class="progress-card">
+    <div class="sleep-grid">
+      <div class="sleep-input-group">
+        <label>BEDTIME</label>
+        <input type="time" id="sleepBed" value="23:00"/>
+      </div>
+      <div class="sleep-input-group">
+        <label>WAKE TIME</label>
+        <input type="time" id="sleepWake" value="07:00"/>
+      </div>
+      <div style="display:flex;align-items:flex-end">
+        <button class="btn-green" style="width:100%;padding:11px" onclick="logSleep()">Log Sleep</button>
+      </div>
+    </div>
+    <div class="sleep-result" id="sleepPreview">
+      <div>
+        <div class="stat-label">Duration</div>
+        <div class="sleep-hours" id="sleepHoursPreview">—</div>
+      </div>
+      <div id="sleepQualityPreview" style="font-size:13px;color:var(--text-muted)">Adjust times above to preview</div>
+    </div>
+    <div class="sleep-history" id="sleepHistory"></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ══ WEEKLY SUMMARY ══ -->
+  <div class="section-head">
+    <h2>Weekly Summary</h2>
+    <span class="pill">THIS WEEK</span>
+  </div>
+  <div class="progress-card" id="weeklySummaryCard">
+    <!-- rendered by JS -->
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- WEIGHT LOG -->
+  <div class="section-head">
+    <h2>Weight Log</h2>
+    <span class="pill">KG</span>
+  </div>
+
+  <div class="weight-card">
+    <div class="weight-input-row">
+      <input type="number" id="weightInput" placeholder="Enter weight in kg  (e.g. 82.5)" step="0.1"/>
+      <button class="btn-green" id="saveWeight">Log Weight</button>
+    </div>
+    <div class="weight-history" id="weightHistory">
+      <div class="weight-empty">No entries yet — log your first weight above.</div>
+    </div>
+  </div>
+
+  <!-- RESET -->
+  <div class="reset-row">
+    <button class="btn-reset" id="resetBtn">Reset All Progress</button>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  BELLY FAT LOSS TRACKER  ·  v2.0
+//  Storage: localStorage (works on any static host / GitHub Pages)
+//  Auto-logic:
+//    • All 6 daily tasks done → today auto-marks ✅ in monthly grid
+//    • Daily tasks auto-reset each new calendar day (month grid kept)
+//    • Flex foods reset weekly (Sunday midnight)
+// ═══════════════════════════════════════════════════════════════
+
+const DAILY_TASKS = [
+  { label:'16 Hour Fasting',      desc:'Eat window e.g. 12pm – 8pm' },
+  { label:'6,000+ Steps',         desc:'Walk or track on your phone' },
+  { label:'Workout Done',         desc:'Any form of exercise counts' },
+  { label:'No Sugar Drinks',      desc:'Water, black tea, or plain coffee' },
+  { label:'Enough Water',         desc:'Aim for 2.5 – 3L today' },
+  { label:'No Late Night Eating', desc:'Nothing after 9 PM' },
+];
+
+const FLEX_FOODS = [
+  { label:'Had Low Sugar Milk Coffee',   limit:'Within 1 cup today' },
+  { label:'Ate Controlled Paratha',      limit:'Low oil, within weekly limit' },
+  { label:'Had Homemade Chicken Masala', limit:'Less oil, reasonable portion' },
+  { label:'Had Limited Fuchka',          limit:'Small portion only' },
+  { label:'Had Shingara / Samosa',       limit:'Within 1× this week' },
+  { label:'Had Small Sweet Portion',     limit:'Occasional treat, controlled' },
+];
+
+// ── STORAGE HELPERS (localStorage, GitHub Pages compatible) ──────
+const S = {
+  get(k)      { try{ return JSON.parse(localStorage.getItem(k)) }catch(e){ return null } },
+  set(k,v)    { localStorage.setItem(k, JSON.stringify(v)) },
+  del(k)      { localStorage.removeItem(k) },
+  clear()     { localStorage.clear() },
+};
+
+// ── DATE UTILITIES ───────────────────────────────────────────────
+function todayStr()  { return new Date().toISOString().slice(0,10) }   // "YYYY-MM-DD"
+function todayDay()  { return new Date().getDate() }                    // 1–31
+function monthKey()  {                                                  // "YYYY-MM"
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+function weekKey()   {                                                  // ISO week "YYYY-Www"
+  const d = new Date();
+  const jan4 = new Date(d.getFullYear(),0,4);
+  const w = Math.ceil(((d - jan4)/86400000 + jan4.getDay()+1)/7);
+  return `${d.getFullYear()}-W${String(w).padStart(2,'0')}`;
+}
+function daysInMonth(){
+  const d = new Date();
+  return new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
+}
+function currentMonthName(){
+  return new Date().toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+}
+
+// ── AUTO-RESET: daily tasks reset if last-saved date ≠ today ────
+function checkDailyReset(){
+  const lastDate = S.get('lastTaskDate');
+  if(lastDate !== todayStr()){
+    S.del('dailyTasks');
+    S.set('lastTaskDate', todayStr());
+  }
+}
+
+// ── AUTO-RESET: flex foods reset each new ISO week ───────────────
+function checkWeeklyReset(){
+  const lastWeek = S.get('lastFlexWeek');
+  if(lastWeek !== weekKey()){
+    S.del('flexFoods');
+    S.set('lastFlexWeek', weekKey());
+  }
+}
+
+// ── DOM REFS ─────────────────────────────────────────────────────
+const streakEl      = document.getElementById('streak');
+const completedEl   = document.getElementById('completedDays');
+const monthlyPctEl  = document.getElementById('monthlyPercent');
+const todayPctEl    = document.getElementById('todayPct');
+const todaySubEl    = document.getElementById('todaySub');
+const progressFill  = document.getElementById('progressFill');
+const progressPctEl = document.getElementById('progressPct');
+const tasksMetaEl   = document.getElementById('tasksMeta');
+const githubGridEl  = document.getElementById('githubGrid');
+const githubInfo    = document.getElementById('githubInfo');
+const taskGridEl    = document.getElementById('taskGrid');
+const flexGridEl    = document.getElementById('flexGrid');
+const weightInput   = document.getElementById('weightInput');
+const saveWeightBtn = document.getElementById('saveWeight');
+const weightHistory = document.getElementById('weightHistory');
+const resetBtn      = document.getElementById('resetBtn');
+const dateBadge     = document.getElementById('dateBadge');
+
+// ── DATE BADGE ───────────────────────────────────────────────────
+dateBadge.textContent = new Date().toLocaleDateString('en-GB',{
+  weekday:'short',day:'numeric',month:'short',year:'numeric'
+});
+
+// ── SVG CHECK ICON ───────────────────────────────────────────────
+const checkSVG = `<svg viewBox="0 0 12 12" fill="none"><polyline points="1.5,6 4.5,9 10.5,3" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+// ═══════════════════════════════════════════════════════════════
+//  DAILY TASKS
+// ═══════════════════════════════════════════════════════════════
+function renderTasks(){
+  const saved = S.get('dailyTasks') || Array(DAILY_TASKS.length).fill(false);
+  taskGridEl.innerHTML = '';
+  DAILY_TASKS.forEach((t,i)=>{
+    const div = document.createElement('div');
+    div.className = 'task' + (saved[i] ? ' is-done' : '');
+    div.innerHTML = `
+      <div class="task-check">${checkSVG}</div>
+      <div class="task-body">
+        <strong>${t.label}</strong>
+        <small>${t.desc}</small>
+      </div>`;
+    div.addEventListener('click',()=>toggleTask(i));
+    taskGridEl.appendChild(div);
+  });
+  updateProgressUI(saved);
+}
+
+function toggleTask(i){
+  const saved = S.get('dailyTasks') || Array(DAILY_TASKS.length).fill(false);
+  saved[i] = !saved[i];
+  S.set('dailyTasks', saved);
+  S.set('lastTaskDate', todayStr());
+
+  // ★ AUTO-MARK MONTHLY GRID when ALL tasks done
+  const allDone = saved.every(Boolean);
+  if(allDone){
+    autoMarkToday(true);
+  } else {
+    // If user unchecks a task, remove today from month grid (optional – honest tracking)
+    autoMarkToday(false);
+  }
+
+  renderTasks();
+  renderMonthGrid(); // refresh grid to show auto-mark
+  renderWeeklySummary();
+}
+
+function updateProgressUI(saved){
+  const done  = saved.filter(Boolean).length;
+  const total = DAILY_TASKS.length;
+  const pct   = Math.round((done / total) * 100);
+  const allDone = done === total;
+
+  progressFill.style.width   = pct + '%';
+  progressPctEl.textContent  = pct + '%';
+  todayPctEl.textContent     = pct + '%';
+  todaySubEl.textContent     = `${done} of ${total} done`;
+
+  if(allDone){
+    tasksMetaEl.innerHTML = `<span style="color:var(--green)">✅ Perfect day! Today has been auto-marked in the monthly tracker.</span>`;
+  } else {
+    tasksMetaEl.textContent = `${total - done} task${total-done!==1?'s':''} remaining to complete today`;
+  }
+}
+
+// ── AUTO-MARK: add/remove today in monthly grid ──────────────────
+function autoMarkToday(mark){
+  const key  = `monthProgress_${monthKey()}`;
+  const days = S.get(key) || [];
+  const d    = todayDay();
+  const idx  = days.indexOf(d);
+  if(mark && idx === -1) days.push(d);
+  if(!mark && idx > -1)  days.splice(idx,1);
+  S.set(key, days);
+  updateMonthStats();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  FLEX FOODS
+// ═══════════════════════════════════════════════════════════════
+function renderFlex(){
+  const saved = S.get('flexFoods') || Array(FLEX_FOODS.length).fill(false);
+  flexGridEl.innerHTML = '';
+  FLEX_FOODS.forEach((f,i)=>{
+    const div = document.createElement('div');
+    div.className = 'task' + (saved[i] ? ' is-done' : '');
+    div.innerHTML = `
+      <div class="task-check">${checkSVG}</div>
+      <div class="task-body">
+        <strong>${f.label}</strong>
+        <span class="info-badge">${f.limit}</span>
+      </div>`;
+    div.addEventListener('click',()=>toggleFlex(i));
+    flexGridEl.appendChild(div);
+  });
+}
+
+function toggleFlex(i){
+  const saved = S.get('flexFoods') || Array(FLEX_FOODS.length).fill(false);
+  saved[i] = !saved[i];
+  S.set('flexFoods', saved);
+  S.set('lastFlexWeek', weekKey());
+  renderFlex();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  MONTHLY GRID
+// ═══════════════════════════════════════════════════════════════
+function renderMonthGrid(){
+  // Column day labels — start Monday
+  const labelsEl = document.getElementById('githubLabels');
+  labelsEl.innerHTML = '';
+  ['M','T','W','T','F','S','S'].forEach(d=>{
+    const s = document.createElement('div');
+    s.className = 'github-label';
+    s.textContent = d;
+    labelsEl.appendChild(s);
+  });
+
+  // Update section pill to show current month
+  const pillEl = document.getElementById('monthPill');
+  if(pillEl) pillEl.textContent = new Date().toLocaleDateString('en-GB',{month:'short'}).toUpperCase();
+
+  githubGridEl.innerHTML = '';
+  const key      = `monthProgress_${monthKey()}`;
+  const savedDays = S.get(key) || [];
+  const today    = todayDay();
+  const total    = daysInMonth();
+
+  for(let i=1; i<=total; i++){
+    const isActive  = savedDays.includes(i);
+    const isToday   = i === today;
+    const isFuture  = i > today;
+
+    const day = document.createElement('div');
+    day.className = 'day' + (isActive ? ' active' : '') + (isFuture ? ' future' : '');
+    day.dataset.day = i;
+    day.textContent = i;
+
+    if(isToday){
+      day.style.outline = '2px solid rgba(34,197,94,.6)';
+      day.style.outlineOffset = '1px';
+    }
+
+    // Past & today = manually toggleable; future = locked
+    if(!isFuture){
+      day.addEventListener('click',()=>manualToggleDay(i));
+      day.title = isActive ? `Day ${i} — completed ✅ (click to undo)` : `Day ${i} — click to mark done`;
+    } else {
+      day.title = `Day ${i} — future`;
+      day.style.cursor = 'default';
+      day.style.opacity = '.35';
+    }
+
+    githubGridEl.appendChild(day);
+  }
+
+  updateMonthStats();
+}
+
+// Manual override: user clicks a past day cell
+function manualToggleDay(d){
+  const key  = `monthProgress_${monthKey()}`;
+  const days = S.get(key) || [];
+  const idx  = days.indexOf(d);
+  if(idx > -1) days.splice(idx,1); else days.push(d);
+  S.set(key, days);
+  renderMonthGrid();
+  renderWeeklySummary();
+}
+
+function updateMonthStats(){
+  const key   = `monthProgress_${monthKey()}`;
+  const saved = S.get(key) || [];
+  const total = daysInMonth();
+  const count = saved.length;
+  const pct   = Math.round((count / total) * 100);
+
+  completedEl.textContent  = count;
+  monthlyPctEl.textContent = pct + '%';
+  githubInfo.textContent   = `${count} / ${total} days completed · ${currentMonthName()}`;
+
+  // Streak: consecutive days counting back from today
+  const today = todayDay();
+  let streak = 0;
+  for(let d = today; d >= 1; d--){
+    if(saved.includes(d)) streak++; else break;
+  }
+  streakEl.textContent = streak;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  WEIGHT LOG
+// ═══════════════════════════════════════════════════════════════
+saveWeightBtn.addEventListener('click',()=>{
+  const val = parseFloat(weightInput.value);
+  if(!val || val < 20 || val > 300) return;
+  const weights = S.get('weights') || [];
+  weights.unshift({
+    weight : val,
+    date   : new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}),
+    iso    : todayStr(),
+  });
+  S.set('weights', weights);
+  weightInput.value = '';
+  renderWeights();
+  calcBMI();
+  renderWeeklySummary();
+});
+
+weightInput.addEventListener('keydown', e => { if(e.key === 'Enter') saveWeightBtn.click(); });
+
+function renderWeights(){
+  const weights = S.get('weights') || [];
+  if(!weights.length){
+    weightHistory.innerHTML = '<div class="weight-empty">No entries yet — log your first weight above.</div>';
+    return;
+  }
+  weightHistory.innerHTML = '';
+  weights.forEach((item,i)=>{
+    const div = document.createElement('div');
+    div.className = 'weight-item';
+    let diffHTML = '';
+    if(i < weights.length - 1){
+      const diff = item.weight - weights[i+1].weight;
+      const cls  = diff <= 0 ? 'down' : 'up';
+      const sign = diff <= 0 ? '▼' : '▲';
+      diffHTML = `<span class="weight-diff ${cls}">${sign} ${Math.abs(diff).toFixed(1)} kg</span>`;
+    }
+    div.innerHTML = `
+      <div>
+        <div class="weight-kg">${item.weight} kg</div>
+        <div class="weight-date">${item.date}</div>
+      </div>
+      ${diffHTML}`;
+    weightHistory.appendChild(div);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  LIVE FASTING CLOCK
+// ═══════════════════════════════════════════════════════════════
+const FASTING_SCHEDULE = [
+  { time:'07:00', label:'⏳ Fasting',            phase:'fast',  color:'var(--amber)' },
+  { time:'09:30', label:'💼 Office (Fasting)',   phase:'fast',  color:'var(--amber)' },
+  { time:'13:30', label:'🍽 Eating Window',       phase:'eat',   color:'var(--green)' },
+  { time:'16:30', label:'🥜 Snack Time',          phase:'eat',   color:'var(--green)' },
+  { time:'20:30', label:'🏠 Light Dinner',        phase:'eat',   color:'var(--green)' },
+  { time:'21:30', label:'🔒 Fasting Begins',      phase:'fast',  color:'var(--amber)' },
+];
+
+function parseTime(str){
+  const [h,m] = str.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function updateFastingClock(){
+  const now = new Date();
+  const cur = now.getHours()*60 + now.getMinutes();
+
+  // Find current phase (last schedule entry that has passed)
+  let phaseIdx = FASTING_SCHEDULE.length - 1;
+  for(let i=0; i<FASTING_SCHEDULE.length; i++){
+    if(cur < parseTime(FASTING_SCHEDULE[i].time)){
+      phaseIdx = i - 1;
+      break;
+    }
+  }
+  if(phaseIdx < 0) phaseIdx = FASTING_SCHEDULE.length - 1; // before 7am = still in last phase
+
+  const current = FASTING_SCHEDULE[phaseIdx];
+  const next    = FASTING_SCHEDULE[(phaseIdx + 1) % FASTING_SCHEDULE.length];
+
+  // Time until next phase (handle midnight wrap)
+  let nextMin = parseTime(next.time);
+  let diff = nextMin - cur;
+  if(diff < 0) diff += 24 * 60;
+
+  const h = Math.floor(diff / 60);
+  const m = diff % 60;
+  const s = 60 - now.getSeconds();
+  const pad = n => String(n).padStart(2,'0');
+
+  document.getElementById('fastPhaseLabel').textContent  = current.label;
+  document.getElementById('fastPhaseLabel').style.color  = current.color;
+  document.getElementById('fastCountdown').textContent   = `${pad(h)}:${pad(m)}:${pad(s===60?0:s)}`;
+
+  // Progress within current phase
+  const phaseStart = parseTime(current.time);
+  let dur = nextMin - phaseStart;
+  if(dur < 0) dur += 24 * 60;
+  let elapsed = cur - phaseStart;
+  if(elapsed < 0) elapsed += 24 * 60;
+  const pct = Math.min(100, Math.round((elapsed / dur) * 100));
+
+  document.getElementById('fastProgress').style.width = pct + '%';
+  document.getElementById('fastMeta').textContent =
+    `${pct}% through current phase · next: ${next.label} at ${next.time.replace(':',':')}`;
+
+  // Highlight active row in table
+  document.querySelectorAll('tbody tr').forEach(tr => tr.classList.remove('fasting-row-active'));
+  const rows = document.querySelectorAll('tbody tr');
+  if(rows[phaseIdx]) rows[phaseIdx].classList.add('fasting-row-active');
+}
+
+setInterval(updateFastingClock, 1000);
+updateFastingClock();
+
+// ═══════════════════════════════════════════════════════════════
+//  MOOD & ENERGY LOG
+// ═══════════════════════════════════════════════════════════════
+const moodState = { energy: null, hunger: null };
+
+document.querySelectorAll('.mood-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const key = btn.dataset.key;
+    const val = btn.dataset.val;
+    moodState[key] = val;
+    // Update active state for this group
+    document.querySelectorAll(`.mood-btn[data-key="${key}"]`).forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+function saveMoodLog(){
+  const note = document.getElementById('moodNote').value.trim();
+  const log  = S.get('moodLog') || [];
+  // Remove existing entry for today
+  const filtered = log.filter(e => e.date !== todayStr());
+  filtered.unshift({
+    date   : todayStr(),
+    energy : moodState.energy,
+    hunger : moodState.hunger,
+    note   : note,
+  });
+  S.set('moodLog', filtered.slice(0, 90)); // keep 90 days
+  document.getElementById('moodSaved').textContent = '✅ Saved at ' + new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+
+function loadMoodLog(){
+  const log   = S.get('moodLog') || [];
+  const today = log.find(e => e.date === todayStr());
+  if(!today) return;
+  if(today.energy){
+    moodState.energy = today.energy;
+    document.querySelector(`.mood-btn[data-key="energy"][data-val="${today.energy}"]`)?.classList.add('active');
+  }
+  if(today.hunger){
+    moodState.hunger = today.hunger;
+    document.querySelector(`.mood-btn[data-key="hunger"][data-val="${today.hunger}"]`)?.classList.add('active');
+  }
+  if(today.note) document.getElementById('moodNote').value = today.note;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  BMI CALCULATOR
+// ═══════════════════════════════════════════════════════════════
+function saveHeight(){
+  const h = document.getElementById('heightInput').value;
+  if(h) S.set('userHeight', parseFloat(h));
+}
+
+function calcBMI(){
+  const h   = parseFloat(document.getElementById('heightInput').value) || S.get('userHeight');
+  const wts = S.get('weights') || [];
+  const w   = wts.length ? wts[0].weight : null;
+
+  document.getElementById('bmiWeightDisplay').textContent = w ? `${w} kg` : '— log a weight first';
+
+  if(!h || !w){
+    document.getElementById('bmiResult').style.display = 'none';
+    document.getElementById('bmiEmpty').style.display  = 'block';
+    return;
+  }
+
+  const bmi = w / ((h/100) ** 2);
+  let cat, col;
+  if     (bmi < 18.5) { cat='Underweight'; col='#3b82f6'; }
+  else if(bmi < 25)   { cat='Normal ✅';   col='var(--green)'; }
+  else if(bmi < 30)   { cat='Overweight';  col='var(--amber)'; }
+  else                 { cat='Obese';       col='#ef4444'; }
+
+  document.getElementById('bmiValue').textContent    = bmi.toFixed(1);
+  document.getElementById('bmiValue').style.color    = col;
+  document.getElementById('bmiCategory').textContent = cat;
+  document.getElementById('bmiCategory').style.color = col;
+  document.getElementById('bmiResult').style.display = 'flex';
+  document.getElementById('bmiEmpty').style.display  = 'none';
+
+  // Marker position: scale BMI 16–40 → 0–100%
+  const pct = Math.min(100, Math.max(0, ((bmi - 16) / (40 - 16)) * 100));
+  document.getElementById('bmiMarker').style.left = `calc(${pct}% - 1.5px)`;
+}
+
+function loadBMI(){
+  const saved = S.get('userHeight');
+  if(saved) document.getElementById('heightInput').value = saved;
+  calcBMI();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  WATER INTAKE
+// ═══════════════════════════════════════════════════════════════
+function saveWaterTarget(){
+  S.set('waterTarget', parseInt(document.getElementById('waterTarget').value));
+}
+
+function getWaterTarget(){
+  return S.get('waterTarget') || 10;
+}
+
+function renderWater(){
+  const target  = getWaterTarget();
+  const filled  = S.get('waterToday') || 0;
+  const cupsEl  = document.getElementById('waterCups');
+  cupsEl.innerHTML = '';
+
+  // Sync select
+  document.getElementById('waterTarget').value = target;
+
+  for(let i=0; i<target; i++){
+    const cup = document.createElement('div');
+    cup.className = 'cup' + (i < filled ? ' filled' : '');
+    cup.innerHTML = `<span class="cup-icon">${i < filled ? '💧' : '🥛'}</span>`;
+    cup.title = `Cup ${i+1}`;
+    cup.addEventListener('click', ()=>{
+      const cur = S.get('waterToday') || 0;
+      // clicking filled cup = unfill from end; clicking empty = fill
+      S.set('waterToday', i < cur ? i : i + 1);
+      renderWater();
+    });
+    cupsEl.appendChild(cup);
+  }
+
+  const ml   = filled * 250;
+  const goal = target * 250;
+  const pct  = Math.round((filled / target) * 100);
+  document.getElementById('waterProgress').style.width = pct + '%';
+  document.getElementById('waterMeta').textContent =
+    `${filled} / ${target} cups · ${ml}ml of ${goal}ml · ${pct}%`;
+}
+
+function checkWaterReset(){
+  if(S.get('waterDate') !== todayStr()){
+    S.del('waterToday');
+    S.set('waterDate', todayStr());
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  STEP COUNTER
+// ═══════════════════════════════════════════════════════════════
+const STEP_GOAL = 6000;
+
+document.getElementById('saveStepsBtn').addEventListener('click', ()=>{
+  const val = parseInt(document.getElementById('stepsInput').value);
+  if(!val || val < 0) return;
+  const log = S.get('stepsLog') || [];
+  const existing = log.findIndex(e => e.date === todayStr());
+  const entry = { date: todayStr(), steps: val, label: new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}) };
+  if(existing > -1) log[existing] = entry; else log.unshift(entry);
+  S.set('stepsLog', log.slice(0, 30));
+  document.getElementById('stepsInput').value = '';
+  renderSteps();
+  renderWeeklySummary();
+});
+
+document.getElementById('stepsInput').addEventListener('keydown', e => {
+  if(e.key==='Enter') document.getElementById('saveStepsBtn').click();
+});
+
+function renderSteps(){
+  const log     = S.get('stepsLog') || [];
+  const today   = log.find(e => e.date === todayStr());
+  const steps   = today ? today.steps : 0;
+  const pct     = Math.min(100, Math.round((steps / STEP_GOAL) * 100));
+
+  document.getElementById('stepsToday').textContent    = steps.toLocaleString();
+  document.getElementById('stepsProgress').style.width = pct + '%';
+  document.getElementById('stepsMeta').textContent     = `${pct}% of ${STEP_GOAL.toLocaleString()} goal${steps >= STEP_GOAL ? ' ✅' : ''}`;
+
+  const histEl = document.getElementById('stepsHistory');
+  histEl.innerHTML = '';
+  log.slice(0,7).forEach(e => {
+    const div = document.createElement('div');
+    div.className = 'step-item';
+    const hit = e.steps >= STEP_GOAL;
+    div.innerHTML = `
+      <div>
+        <div class="step-val">${e.steps.toLocaleString()} steps</div>
+        <div style="font-size:12px;color:var(--text-muted);font-family:'DM Mono',monospace">${e.label}</div>
+      </div>
+      <span class="step-badge ${hit?'goal':'miss'}">${hit?'✅ Goal hit':'Below goal'}</span>`;
+    histEl.appendChild(div);
+  });
+  if(!log.length) histEl.innerHTML = '<div class="weight-empty">No steps logged yet.</div>';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SLEEP TRACKER
+// ═══════════════════════════════════════════════════════════════
+function calcSleepDuration(bed, wake){
+  let [bh,bm] = bed.split(':').map(Number);
+  let [wh,wm] = wake.split(':').map(Number);
+  let bedMins  = bh * 60 + bm;
+  let wakeMins = wh * 60 + wm;
+  if(wakeMins <= bedMins) wakeMins += 24 * 60; // overnight
+  return (wakeMins - bedMins) / 60;
+}
+
+function sleepQuality(hrs, bed){
+  const [bh] = bed.split(':').map(Number);
+  // After midnight = 0,1,2,3,4 hours → late bedtime
+  const isLate = bh >= 0 && bh <= 4;
+  if(hrs >= 7 && hrs <= 9 && !isLate) return { label:'Good 😴', cls:'good' };
+  if(hrs >= 6)                         return { label:'Okay 😐', cls:'ok' };
+  return                                { label:'Poor 😵', cls:'bad' };
+}
+
+// Live preview on input change
+['sleepBed','sleepWake'].forEach(id => {
+  document.getElementById(id).addEventListener('input', previewSleep);
+});
+
+function previewSleep(){
+  const bed  = document.getElementById('sleepBed').value;
+  const wake = document.getElementById('sleepWake').value;
+  if(!bed || !wake) return;
+  const hrs = calcSleepDuration(bed, wake);
+  const q   = sleepQuality(hrs, bed);
+  const h   = Math.floor(hrs);
+  const m   = Math.round((hrs - h) * 60);
+  document.getElementById('sleepHoursPreview').textContent  = `${h}h ${m}m`;
+  document.getElementById('sleepHoursPreview').style.color  = q.cls === 'good' ? 'var(--green)' : q.cls === 'ok' ? 'var(--amber)' : '#f87171';
+  document.getElementById('sleepQualityPreview').textContent = q.label;
+}
+
+function logSleep(){
+  const bed  = document.getElementById('sleepBed').value;
+  const wake = document.getElementById('sleepWake').value;
+  if(!bed || !wake) return;
+  const hrs  = calcSleepDuration(bed, wake);
+  const q    = sleepQuality(hrs, bed);
+  const log  = S.get('sleepLog') || [];
+  const existing = log.findIndex(e => e.date === todayStr());
+  const entry = {
+    date : todayStr(),
+    label: new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}),
+    bed, wake, hrs,
+    quality: q.cls,
+  };
+  if(existing > -1) log[existing] = entry; else log.unshift(entry);
+  S.set('sleepLog', log.slice(0, 30));
+  renderSleep();
+  renderWeeklySummary();
+}
+
+function renderSleep(){
+  previewSleep();
+  const log = S.get('sleepLog') || [];
+  const histEl = document.getElementById('sleepHistory');
+  histEl.innerHTML = '';
+  log.slice(0,7).forEach(e => {
+    const h = Math.floor(e.hrs);
+    const m = Math.round((e.hrs - h) * 60);
+    const div = document.createElement('div');
+    div.className = 'sleep-item';
+    div.innerHTML = `
+      <div>
+        <div class="sleep-label">${e.bed} → ${e.wake}</div>
+        <div style="font-size:12px;color:var(--text-muted);font-family:'DM Mono',monospace">${e.label}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:'DM Mono',monospace;font-size:14px;font-weight:500">${h}h ${m}m</div>
+        <span class="sleep-badge ${e.quality}">${e.quality==='good'?'Good 😴':e.quality==='ok'?'Okay 😐':'Poor 😵'}</span>
+      </div>`;
+    histEl.appendChild(div);
+  });
+  if(!log.length) histEl.innerHTML = '<div class="weight-empty">No sleep logged yet.</div>';
+}
+
+function loadSleep(){
+  const log   = S.get('sleepLog') || [];
+  const today = log.find(e => e.date === todayStr());
+  if(today){
+    document.getElementById('sleepBed').value  = today.bed;
+    document.getElementById('sleepWake').value = today.wake;
+  }
+  renderSleep();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  WEEKLY SUMMARY
+// ═══════════════════════════════════════════════════════════════
+function getWeekDates(){
+  const today = new Date();
+  const dow   = today.getDay(); // 0=Sun
+  const mon   = new Date(today);
+  mon.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
+  const days = [];
+  for(let i=0; i<7; i++){
+    const d = new Date(mon);
+    d.setDate(mon.getDate() + i);
+    days.push(d.toISOString().slice(0,10));
+  }
+  return days;
+}
+
+function renderWeeklySummary(){
+  const card    = document.getElementById('weeklySummaryCard');
+  const wDates  = getWeekDates();
+  const today   = todayStr();
+  const mKey    = `monthProgress_${monthKey()}`;
+  const doneDays = S.get(mKey) || [];
+  const stepsLog = S.get('stepsLog') || [];
+  const sleepLog = S.get('sleepLog') || [];
+  const moodLog  = S.get('moodLog')  || [];
+  const weights  = S.get('weights')  || [];
+
+  // Days where all tasks done (= in monthly grid)
+  let taskDays = 0, stepGoalDays = 0, sleepGoodDays = 0, totalSteps = 0;
+  const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+  wDates.forEach((iso, i) => {
+    const dayNum = new Date(iso).getDate();
+    if(doneDays.includes(dayNum)) taskDays++;
+    const se = stepsLog.find(e => e.date === iso);
+    if(se){ totalSteps += se.steps; if(se.steps >= STEP_GOAL) stepGoalDays++; }
+    const sl = sleepLog.find(e => e.date === iso);
+    if(sl && sl.quality === 'good') sleepGoodDays++;
+  });
+
+  // Weight change this week
+  const weekWeights = weights.filter(w => wDates.includes(w.iso));
+  let weightTrend = '—';
+  if(weekWeights.length >= 2){
+    const diff = weekWeights[0].weight - weekWeights[weekWeights.length-1].weight;
+    weightTrend = (diff <= 0 ? '▼ ' : '▲ +') + Math.abs(diff).toFixed(1) + ' kg';
+  }
+
+  // Motivational tip
+  const tips = [
+    taskDays < 3  ? '💡 Try to hit at least 4 full task days next week — consistency beats perfection.' : null,
+    stepGoalDays < 3 ? '🚶 Step goal was missed most days. A 30-min walk after dinner can add ~3,000 steps.' : null,
+    sleepGoodDays < 3 ? '😴 Sleep quality needs work. Try moving your bedtime 30 mins earlier.' : null,
+    taskDays >= 5 ? '🔥 Amazing week! 5+ full days — you\'re building a real habit.' : null,
+    stepGoalDays >= 5 ? '👟 Step goal hit most days — your activity level is strong!' : null,
+  ].filter(Boolean);
+  const tip = tips[0] || '✅ Keep going — every consistent day compounds.';
+
+  card.innerHTML = `
+    <div class="summary-grid">
+      <div class="summary-stat">
+        <div class="summary-label">Full Days Done</div>
+        <div class="summary-val">${taskDays}<span style="font-size:16px;color:var(--text-muted)">/7</span></div>
+      </div>
+      <div class="summary-stat">
+        <div class="summary-label">Step Goal Days</div>
+        <div class="summary-val">${stepGoalDays}<span style="font-size:16px;color:var(--text-muted)">/7</span></div>
+      </div>
+      <div class="summary-stat">
+        <div class="summary-label">Good Sleep Nights</div>
+        <div class="summary-val">${sleepGoodDays}<span style="font-size:16px;color:var(--text-muted)">/7</span></div>
+      </div>
+      <div class="summary-stat">
+        <div class="summary-label">Total Steps</div>
+        <div class="summary-val" style="font-size:20px">${totalSteps.toLocaleString()}</div>
+      </div>
+      <div class="summary-stat">
+        <div class="summary-label">Weight Trend</div>
+        <div class="summary-val" style="font-size:20px;color:${weightTrend.startsWith('▼')?'var(--green)':weightTrend==='—'?'var(--text-muted)':'#f87171'}">${weightTrend}</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:10px">
+      <div class="stat-label" style="margin-bottom:10px">Daily Completion This Week</div>
+      <div class="week-days">
+        ${wDates.map((iso,i) => {
+          const dayNum = new Date(iso).getDate();
+          const done   = doneDays.includes(dayNum);
+          const isTod  = iso === today;
+          const future = iso > today;
+          return `<div class="wday${done?' done':''}${isTod?' today-w':''}">
+            <div class="wday-name">${DAY_NAMES[i]}</div>
+            <div style="font-size:11px;font-family:'DM Mono',monospace">${new Date(iso).getDate()}</div>
+            <div class="wday-dot" style="${future?'opacity:.3':''}"></div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="summary-tip"><strong>This week:</strong> ${tip}</div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RESET
+// ═══════════════════════════════════════════════════════════════
+resetBtn.addEventListener('click',()=>{
+  if(confirm('Reset ALL progress including monthly history and weight log? This cannot be undone.')){
+    S.clear();
+    location.reload();
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════
+checkDailyReset();
+checkWeeklyReset();
+checkWaterReset();
+renderTasks();
+renderFlex();
+renderMonthGrid();
+renderWeights();
+loadMoodLog();
+loadBMI();
+renderWater();
+renderSteps();
+loadSleep();
+renderWeeklySummary();
+</script>
+</body>
+</html>
