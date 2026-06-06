@@ -2,7 +2,7 @@
 
 A personal fitness dashboard built as a single HTML file. No backend, no framework, no dependencies — just drop it on GitHub Pages and it works.
 
-**Live demo:** `https://yourusername.github.io/belly-fat-tracker/`
+**Live demo:** `https://mehedi-hasan4.github.io/fitness_tracker/`
 
 ---
 
